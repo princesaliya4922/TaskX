@@ -169,17 +169,26 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
       />
 
       {/* Tickets Table */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card style={{ backgroundColor: '#161618', borderColor: '#2c2c34' }}>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-6 text-center">
-              <div className="text-gray-400">Loading tickets...</div>
+              <div style={{ color: '#8993a4' }}>Loading tickets...</div>
             </div>
           ) : tickets.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="text-gray-400 mb-4">No tickets found</div>
+              <div className="mb-4" style={{ color: '#8993a4' }}>No tickets found</div>
               {onCreateTicket && (
-                <Button onClick={onCreateTicket} className="bg-blue-600 hover:bg-blue-700">
+                <Button
+                  onClick={onCreateTicket}
+                  style={{ backgroundColor: '#579dff', color: '#b6c2cf' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#85b8ff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#579dff';
+                  }}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Ticket
                 </Button>
@@ -188,53 +197,90 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-800">
-                  <TableHead className="text-gray-300">
+                <TableRow style={{ borderColor: '#2c2c34' }}>
+                  <TableHead style={{ color: '#8993a4' }}>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("ticketId")}
-                      className="text-gray-300 hover:text-white p-0"
+                      className="p-0"
+                      style={{ color: '#8993a4' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#8993a4';
+                      }}
                     >
                       ID
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-gray-300">
+                  <TableHead style={{ color: '#8993a4' }}>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("title")}
-                      className="text-gray-300 hover:text-white p-0"
+                      className="p-0"
+                      style={{ color: '#8993a4' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#8993a4';
+                      }}
                     >
                       Title
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">Type</TableHead>
-                  <TableHead className="text-gray-300">Priority</TableHead>
-                  <TableHead className="text-gray-300">Assignee</TableHead>
-                  <TableHead className="text-gray-300">
+                  <TableHead style={{ color: '#8993a4' }}>Status</TableHead>
+                  <TableHead style={{ color: '#8993a4' }}>Type</TableHead>
+                  <TableHead style={{ color: '#8993a4' }}>Priority</TableHead>
+                  <TableHead style={{ color: '#8993a4' }}>Assignee</TableHead>
+                  <TableHead style={{ color: '#8993a4' }}>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("updatedAt")}
-                      className="text-gray-300 hover:text-white p-0"
+                      className="p-0"
+                      style={{ color: '#8993a4' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#8993a4';
+                      }}
                     >
                       Updated
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-gray-300">Activity</TableHead>
+                  <TableHead style={{ color: '#8993a4' }}>Activity</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {tickets.map((ticket) => {
                   const StatusIcon = statusIcons[ticket.status];
                   return (
-                    <TableRow key={ticket.id} className="border-gray-800 hover:bg-gray-800/50">
+                    <TableRow
+                      key={ticket.id}
+                      style={{ borderColor: '#2c2c34' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#1d1d20';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
                       <TableCell>
                         <Link
                           href={getTicketUrl(ticket)}
-                          className="text-blue-400 hover:text-blue-300 font-mono"
+                          className="font-mono"
+                          style={{ color: '#579dff' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#85b8ff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#579dff';
+                          }}
                         >
                           {ticket.ticketId}
                         </Link>
@@ -242,24 +288,31 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
                       <TableCell>
                         <Link
                           href={getTicketUrl(ticket)}
-                          className="text-white hover:text-blue-300 font-medium"
+                          className="font-medium"
+                          style={{ color: '#b6c2cf' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#579dff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#b6c2cf';
+                          }}
                         >
                           {ticket.title}
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${statusColors[ticket.status]} text-white`}>
+                        <Badge className={`${statusColors[ticket.status]}`} style={{ color: '#b6c2cf' }}>
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {ticket.status.replace("_", " ")}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${typeColors[ticket.type]} text-white`}>
+                        <Badge className={`${typeColors[ticket.type]}`} style={{ color: '#b6c2cf' }}>
                           {ticket.type}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${priorityColors[ticket.priority]} text-white`}>
+                        <Badge className={`${priorityColors[ticket.priority]}`} style={{ color: '#b6c2cf' }}>
                           {ticket.priority}
                         </Badge>
                       </TableCell>
@@ -268,23 +321,26 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
                           <div className="flex items-center space-x-2">
                             <Avatar className="h-6 w-6">
                               <AvatarImage src={ticket.assignee.avatarUrl || ""} />
-                              <AvatarFallback className="text-xs">
+                              <AvatarFallback
+                                className="text-xs"
+                                style={{ backgroundColor: '#1d1d20', color: '#8993a4' }}
+                              >
                                 {getInitials(ticket.assignee.name || "")}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-gray-300 text-sm">
+                            <span className="text-sm" style={{ color: '#8993a4' }}>
                               {ticket.assignee.name}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-500">Unassigned</span>
+                          <span style={{ color: '#6b778c' }}>Unassigned</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                      <TableCell className="text-sm" style={{ color: '#8993a4' }}>
                         {formatDate(ticket.updatedAt)}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-3 text-gray-400">
+                        <div className="flex items-center space-x-3" style={{ color: '#8993a4' }}>
                           {ticket._count?.comments > 0 && (
                             <div className="flex items-center space-x-1">
                               <MessageSquare className="h-4 w-4" />
@@ -311,7 +367,7 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <div className="text-gray-400 text-sm">
+          <div className="text-sm" style={{ color: '#8993a4' }}>
             Page {page} of {totalPages}
           </div>
           <div className="flex space-x-2">
@@ -319,7 +375,23 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
               variant="outline"
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              style={{
+                borderColor: '#2c2c34',
+                color: '#8993a4',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                if (page !== 1) {
+                  e.currentTarget.style.backgroundColor = '#1d1d20';
+                  e.currentTarget.style.color = '#b6c2cf';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (page !== 1) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#8993a4';
+                }
+              }}
             >
               Previous
             </Button>
@@ -327,7 +399,23 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
               variant="outline"
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              style={{
+                borderColor: '#2c2c34',
+                color: '#8993a4',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                if (page !== totalPages) {
+                  e.currentTarget.style.backgroundColor = '#1d1d20';
+                  e.currentTarget.style.color = '#b6c2cf';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (page !== totalPages) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#8993a4';
+                }
+              }}
             >
               Next
             </Button>

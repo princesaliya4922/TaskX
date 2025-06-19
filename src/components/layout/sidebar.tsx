@@ -124,27 +124,30 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
   ];
 
   return (
-    <div className={`bg-gray-900 border-r border-gray-700 flex flex-col transition-all duration-300 ${
+    <div className={`flex flex-col transition-all duration-300 ${
       isCollapsed ? "w-16" : "w-64"
-    }`}>
+    }`} style={{ backgroundColor: '#161618', borderRight: '1px solid #2c2c34' }}>
       {/* Header - Compact */}
-      <div className="p-3 border-b border-gray-700">
+      <div className="p-3" style={{ borderBottom: '1px solid #2c2c34' }}>
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-600 rounded-sm flex items-center justify-center">
+              <div className="w-6 h-6 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#579dff' }}>
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
               </div>
-              <h1 className="text-sm font-semibold text-white">SprintX</h1>
+              <h1 className="text-sm font-semibold" style={{ color: '#b6c2cf' }}>SprintX</h1>
             </div>
           )}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-gray-400 hover:text-white hover:bg-gray-800 h-6 w-6 p-0"
+            className="h-6 w-6 p-0"
+            style={{ color: '#8993a4' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}
           >
             {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
           </Button>
@@ -152,7 +155,7 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
       </div>
 
       {/* Organization Switcher */}
-      <div className="p-3 border-b border-gray-700">
+      <div className="p-3" style={{ borderBottom: '1px solid #2c2c34' }}>
         {!isCollapsed ? (
           <OrganizationSwitcher
             currentOrganizationId={currentOrganizationId}
@@ -160,7 +163,7 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
           />
         ) : (
           <div className="flex justify-center">
-            <div className="w-6 h-6 bg-blue-600 rounded-sm flex items-center justify-center">
+            <div className="w-6 h-6 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#579dff' }}>
               <Building2 className="h-3 w-3 text-white" />
             </div>
           </div>
@@ -169,11 +172,11 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
 
       {/* Project Context */}
       {currentProjectId && !isCollapsed && (
-        <div className="p-3 border-b border-gray-700">
+        <div className="p-3" style={{ borderBottom: '1px solid #2c2c34' }}>
           <div className="flex items-center space-x-2 text-xs">
-            <Target className="h-3 w-3 text-blue-400" />
-            <span className="text-gray-400">Project:</span>
-            <span className="text-white font-medium">Current Project</span>
+            <Target className="h-3 w-3" style={{ color: '#579dff' }} />
+            <span style={{ color: '#8993a4' }}>Project:</span>
+            <span className="font-medium" style={{ color: '#b6c2cf' }}>Current Project</span>
           </div>
         </div>
       )}
@@ -189,11 +192,27 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
                 href={item.disabled ? "#" : item.href}
                 className={`flex items-center space-x-2 px-2 py-1.5 rounded-md text-xs transition-colors ${
                   item.active
-                    ? "bg-blue-600 text-white"
+                    ? "text-white"
                     : item.disabled
-                    ? "text-gray-500 cursor-not-allowed"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? "cursor-not-allowed"
+                    : ""
                 }`}
+                style={{
+                  backgroundColor: item.active ? '#579dff' : 'transparent',
+                  color: item.active ? '#ffffff' : item.disabled ? '#6b778c' : '#8993a4'
+                }}
+                onMouseEnter={(e) => {
+                  if (!item.active && !item.disabled) {
+                    e.currentTarget.style.backgroundColor = '#22222a';
+                    e.currentTarget.style.color = '#b6c2cf';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!item.active && !item.disabled) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#8993a4';
+                  }
+                }}
                 onClick={(e) => {
                   if (item.disabled) {
                     e.preventDefault();
@@ -211,7 +230,10 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
             <div className="mt-4">
               <button
                 onClick={() => setProjectsExpanded(!projectsExpanded)}
-                className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors"
+                style={{ color: '#8993a4' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}
               >
                 <div className="flex items-center space-x-3">
                   <Target className="h-4 w-4" />
@@ -228,11 +250,23 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
                 <div className="mt-2 ml-6 space-y-1">
                   <Link
                     href={`/organizations/${currentOrganizationId}/projects`}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      pathname === `/organizations/${currentOrganizationId}/projects`
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
-                    }`}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                    style={{
+                      backgroundColor: pathname === `/organizations/${currentOrganizationId}/projects` ? '#579dff' : 'transparent',
+                      color: pathname === `/organizations/${currentOrganizationId}/projects` ? '#ffffff' : '#8993a4'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (pathname !== `/organizations/${currentOrganizationId}/projects`) {
+                        e.currentTarget.style.backgroundColor = '#22222a';
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (pathname !== `/organizations/${currentOrganizationId}/projects`) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#8993a4';
+                      }
+                    }}
                   >
                     <FolderOpen className="h-4 w-4" />
                     <span>All Projects</span>
@@ -242,13 +276,25 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
                     <Link
                       key={project.id}
                       href={`/organizations/${currentOrganizationId}/projects/${project.id}`}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        currentProjectId === project.id
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-400 hover:bg-gray-800 hover:text-white"
-                      }`}
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                      style={{
+                        backgroundColor: currentProjectId === project.id ? '#579dff' : 'transparent',
+                        color: currentProjectId === project.id ? '#ffffff' : '#8993a4'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (currentProjectId !== project.id) {
+                          e.currentTarget.style.backgroundColor = '#22222a';
+                          e.currentTarget.style.color = '#b6c2cf';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (currentProjectId !== project.id) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#8993a4';
+                        }
+                      }}
                     >
-                      <div className="w-4 h-4 bg-gray-600 rounded-sm flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#2c2c34' }}>
                         <span className="text-xs font-mono text-white">
                           {project.key.charAt(0)}
                         </span>
@@ -265,7 +311,7 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
         {/* Quick Actions */}
         {!isCollapsed && quickActions.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: '#6b778c' }}>
               Quick Actions
             </h3>
             <div className="space-y-1">
@@ -275,11 +321,23 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
                   <Link
                     key={action.name}
                     href={action.disabled ? "#" : action.href}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      action.disabled
-                        ? "text-gray-500 cursor-not-allowed"
-                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                    }`}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                    style={{
+                      color: action.disabled ? '#6b778c' : '#8993a4',
+                      cursor: action.disabled ? 'not-allowed' : 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!action.disabled) {
+                        e.currentTarget.style.backgroundColor = '#22222a';
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!action.disabled) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#8993a4';
+                      }
+                    }}
                     onClick={(e) => {
                       if (action.disabled) {
                         e.preventDefault();
@@ -297,10 +355,13 @@ export default function Sidebar({ currentOrganizationId, currentProjectId }: Sid
       </nav>
 
       {/* Settings */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4" style={{ borderTop: '1px solid #2c2c34' }}>
         <Link
           href="/settings"
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+          style={{ color: '#8993a4' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}
         >
           <Settings className="h-4 w-4" />
           {!isCollapsed && <span>Settings</span>}

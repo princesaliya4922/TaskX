@@ -26,7 +26,7 @@ export default function ProjectBacklogPage() {
 
   return (
     <ProjectLayout>
-      <div className="bg-gray-950 min-h-full">
+      <div style={{ backgroundColor: '#0c0c0c', minHeight: '100%' }}>
         <SprintBacklogView
           organizationId={organizationId}
           projectId={projectId}
@@ -35,9 +35,12 @@ export default function ProjectBacklogPage() {
         />
 
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
+          <DialogContent
+            className="max-w-2xl"
+            style={{ backgroundColor: '#161618', borderColor: '#2c2c34' }}
+          >
             <DialogHeader>
-              <DialogTitle className="text-white">Create New Ticket</DialogTitle>
+              <DialogTitle style={{ color: '#b6c2cf' }}>Create New Ticket</DialogTitle>
             </DialogHeader>
             <TicketForm
               organizationId={organizationId}

@@ -77,7 +77,7 @@ export default function ProjectNavigation({
   ];
 
   return (
-    <div className="bg-gray-900 border-b border-gray-700">
+    <div style={{ backgroundColor: '#161618', borderBottom: '1px solid #2c2c34' }}>
       <div className="px-4 py-1">
         {/* Jira-style compact navigation tabs */}
         <nav className="flex space-x-0">
@@ -87,11 +87,24 @@ export default function ProjectNavigation({
               <Link
                 key={tab.name}
                 href={tab.href}
-                className={`flex items-center space-x-2 px-3 py-2 text-xs font-medium transition-colors border-b-2 ${
-                  tab.active
-                    ? "border-blue-500 text-blue-400 bg-gray-800"
-                    : "border-transparent text-gray-400 hover:text-gray-300 hover:bg-gray-800"
-                }`}
+                className="flex items-center space-x-2 px-3 py-2 text-xs font-medium transition-colors border-b-2"
+                style={{
+                  borderBottomColor: tab.active ? '#579dff' : 'transparent',
+                  color: tab.active ? '#579dff' : '#8993a4',
+                  backgroundColor: tab.active ? '#1d1d20' : 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (!tab.active) {
+                    e.currentTarget.style.backgroundColor = '#22222a';
+                    e.currentTarget.style.color = '#b6c2cf';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!tab.active) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#8993a4';
+                  }
+                }}
               >
                 <Icon className="h-3 w-3" />
                 <span>{tab.name}</span>

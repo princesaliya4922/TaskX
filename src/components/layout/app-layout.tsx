@@ -48,7 +48,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex">
+    <div className="min-h-screen flex" style={{ backgroundColor: '#0c0c0c' }}>
       {/* Sidebar */}
       <Sidebar
         currentOrganizationId={effectiveOrgId}
@@ -58,32 +58,35 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Jira-style compact top header */}
-        <header className="bg-gray-900 border-b border-gray-700 h-12 flex items-center justify-end px-4">
+        <header className="h-12 flex items-center justify-end px-4" style={{ backgroundColor: '#161618', borderBottom: '1px solid #2c2c34' }}>
           <div className="flex items-center space-x-3">
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800 relative h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="relative h-8 w-8 p-0" style={{ color: '#8993a4' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}>
               <Bell className="h-3 w-3" />
               <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
             </Button>
 
             {/* Settings */}
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800 h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" style={{ color: '#8993a4' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}>
               <Settings className="h-3 w-3" />
             </Button>
 
             {/* User Menu - Compact */}
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
-                <User className="h-3 w-3 text-gray-300" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#2c2c34' }}>
+                <User className="h-3 w-3" style={{ color: '#8993a4' }} />
               </div>
               <div className="hidden md:block">
-                <p className="text-xs font-medium text-white">{session.user?.name}</p>
+                <p className="text-xs font-medium" style={{ color: '#b6c2cf' }}>{session.user?.name}</p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-gray-400 hover:text-white hover:bg-gray-800 h-8 w-8 p-0"
+                className="h-8 w-8 p-0"
+                style={{ color: '#8993a4' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#22222a'; e.currentTarget.style.color = '#b6c2cf'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8993a4'; }}
               >
                 <LogOut className="h-3 w-3" />
               </Button>
@@ -92,7 +95,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto bg-gray-950">
+        <main className="flex-1 overflow-auto" style={{ backgroundColor: '#0c0c0c' }}>
           {children}
         </main>
       </div>

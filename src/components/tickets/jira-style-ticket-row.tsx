@@ -205,10 +205,24 @@ export default function JiraStyleTicketRow({
     <TooltipProvider>
       <div
         ref={setNodeRef}
-        style={style}
-        className={`group relative border-b border-gray-700 hover:bg-gray-800 transition-colors ${
-          isDragging ? "opacity-50 bg-gray-700" : ""
+        style={{
+          ...style,
+          borderBottom: '1px solid #2c2c34',
+          backgroundColor: isDragging ? '#22222a' : 'transparent'
+        }}
+        className={`group relative transition-colors ${
+          isDragging ? "opacity-50" : ""
         }`}
+        onMouseEnter={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.backgroundColor = '#1d1d20';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
       >
         {/* Main Row */}
         <div className="flex items-center py-2 px-3 min-h-[44px]">
@@ -218,7 +232,7 @@ export default function JiraStyleTicketRow({
             {...listeners}
             className="opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-opacity mr-2 flex-shrink-0"
           >
-            <GripVertical className="h-4 w-4 text-gray-400" />
+            <GripVertical className="h-4 w-4" style={{ color: '#8993a4' }} />
           </div>
 
           {/* Type Icon */}
@@ -230,7 +244,14 @@ export default function JiraStyleTicketRow({
           <div className="flex-shrink-0 mr-4 w-20">
             <Link
               href={getTicketUrl()}
-              className="text-blue-400 hover:text-blue-300 font-mono text-sm font-medium"
+              className="font-mono text-sm font-medium"
+              style={{ color: '#579dff' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#85b8ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#579dff';
+              }}
             >
               {ticket.ticketId}
             </Link>
@@ -240,7 +261,14 @@ export default function JiraStyleTicketRow({
           <div className="flex-1 min-w-0 mr-6">
             <button
               onClick={() => onOpenSidebar?.(ticket.id)}
-              className="text-white hover:text-blue-300 font-medium truncate block w-full text-left text-sm"
+              className="font-medium truncate block w-full text-left text-sm"
+              style={{ color: '#b6c2cf' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#579dff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#b6c2cf';
+              }}
               title={ticket.title}
             >
               {ticket.title}
@@ -259,12 +287,23 @@ export default function JiraStyleTicketRow({
                   <span className="text-xs whitespace-nowrap">{ticket.status.replace("_", " ").replace("READY TO DEPLOY", "READY")}</span>
                 </Badge>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-800 border-gray-700 min-w-[160px]" align="start">
+              <DropdownMenuContent
+                className="min-w-[160px]"
+                align="start"
+                style={{ backgroundColor: '#1d1d20', borderColor: '#2c2c34' }}
+              >
                 {Object.keys(statusColors).map((status) => (
                   <DropdownMenuItem
                     key={status}
                     onClick={() => handleStatusChange(status)}
-                    className="text-gray-300 hover:bg-gray-700 cursor-pointer"
+                    className="cursor-pointer"
+                    style={{ color: '#b6c2cf' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#22222a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded ${statusColors[status as keyof typeof statusColors].split(' ')[1]}`} />
@@ -297,14 +336,29 @@ export default function JiraStyleTicketRow({
                 onChange={(e) => setStoryPointsValue(e.target.value)}
                 onBlur={handleStoryPointsChange}
                 onKeyDown={handleStoryPointsKeyPress}
-                className="w-8 h-8 bg-gray-700 border-gray-600 text-white text-xs text-center p-1 rounded-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-8 h-8 text-xs text-center p-1 rounded-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                style={{
+                  backgroundColor: '#1d1d20',
+                  borderColor: '#2c2c34',
+                  color: '#b6c2cf'
+                }}
                 placeholder="SP"
                 min="0"
                 autoFocus
               />
             ) : (
               <div
-                className="flex items-center justify-center w-5 h-5 bg-gray-700 rounded-full text-xs text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors mx-auto"
+                className="flex items-center justify-center w-5 h-5 rounded-full text-xs cursor-pointer transition-colors mx-auto"
+                style={{
+                  backgroundColor: '#1d1d20',
+                  color: '#8993a4'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#22222a';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1d1d20';
+                }}
                 onClick={() => setIsEditingStoryPoints(true)}
               >
                 {ticket.storyPoints || "—"}
@@ -321,18 +375,31 @@ export default function JiraStyleTicketRow({
                     <TooltipTrigger asChild>
                       <PriorityIcon className={`h-3.5 w-3.5 ${priorityColors[ticket.priority]}`} />
                     </TooltipTrigger>
-                    <TooltipContent className="bg-gray-800 border-gray-700 text-white">
+                    <TooltipContent
+                      style={{ backgroundColor: '#1d1d20', borderColor: '#2c2c34', color: '#b6c2cf' }}
+                    >
                       <p>{ticket.priority}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-800 border-gray-700 min-w-[120px]" align="start">
+              <DropdownMenuContent
+                className="min-w-[120px]"
+                align="start"
+                style={{ backgroundColor: '#1d1d20', borderColor: '#2c2c34' }}
+              >
                 {Object.keys(priorityColors).map((priority) => (
                   <DropdownMenuItem
                     key={priority}
                     onClick={() => handlePriorityChange(priority)}
-                    className="text-gray-300 hover:bg-gray-700 cursor-pointer"
+                    className="cursor-pointer"
+                    style={{ color: '#b6c2cf' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#22222a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <div className={`${priorityColors[priority as keyof typeof priorityColors]}`}>
@@ -356,26 +423,42 @@ export default function JiraStyleTicketRow({
                       {ticket.assignee ? (
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={ticket.assignee.avatarUrl || ""} />
-                          <AvatarFallback className="text-xs bg-gray-700 text-gray-300 font-medium">
+                          <AvatarFallback
+                            className="text-xs font-medium"
+                            style={{ backgroundColor: '#1d1d20', color: '#8993a4' }}
+                          >
                             {getInitials(ticket.assignee.name || "")}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-gray-400">?</span>
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: '#1d1d20' }}
+                        >
+                          <span className="text-xs" style={{ color: '#8993a4' }}>?</span>
                         </div>
                       )}
                     </TooltipTrigger>
-                    <TooltipContent className="bg-gray-800 border-gray-700 text-white">
+                    <TooltipContent
+                      style={{ backgroundColor: '#1d1d20', borderColor: '#2c2c34', color: '#b6c2cf' }}
+                    >
                       <p>{ticket.assignee?.name || "Unassigned"}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-800 border-gray-700">
+              <DropdownMenuContent
+                style={{ backgroundColor: '#1d1d20', borderColor: '#2c2c34' }}
+              >
                 <DropdownMenuItem
                   onClick={() => handleAssigneeChange("unassigned")}
-                  className="text-gray-300 hover:bg-gray-700"
+                  style={{ color: '#b6c2cf' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#22222a';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
                   Unassigned
                 </DropdownMenuItem>
@@ -383,12 +466,21 @@ export default function JiraStyleTicketRow({
                   <DropdownMenuItem
                     key={member.user.id}
                     onClick={() => handleAssigneeChange(member.user.id)}
-                    className="text-gray-300 hover:bg-gray-700"
+                    style={{ color: '#b6c2cf' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#22222a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-4 w-4">
                         <AvatarImage src={member.user.avatarUrl || ""} />
-                        <AvatarFallback className="text-xs bg-gray-700 text-gray-300">
+                        <AvatarFallback
+                          className="text-xs"
+                          style={{ backgroundColor: '#1d1d20', color: '#8993a4' }}
+                        >
                           {getInitials(member.user.name)}
                         </AvatarFallback>
                       </Avatar>

@@ -112,18 +112,38 @@ export default function CompactFilterBar({
   return (
     <TooltipProvider>
       {/* Jira-style compact filter bar */}
-      <div className="bg-gray-900 border-b border-gray-700 px-4 py-2">
+      <div
+        className="px-4 py-2"
+        style={{
+          backgroundColor: '#161618',
+          borderBottom: '1px solid #2c2c34'
+        }}
+      >
         <div className="flex items-center justify-between space-x-3">
           {/* Left side - Search and Member Avatars */}
           <div className="flex items-center space-x-3 flex-1">
             {/* Search Bar */}
             <div className="relative w-56">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+              <Search
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3"
+                style={{ color: '#8993a4' }}
+              />
               <Input
                 placeholder="Search backlog"
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-7 bg-gray-800 border-gray-600 text-white h-7 text-xs placeholder:text-gray-500 focus:border-blue-500"
+                className="pl-7 h-7 text-xs"
+                style={{
+                  backgroundColor: '#1d1d20',
+                  borderColor: '#2c2c34',
+                  color: '#b6c2cf'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#579dff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#2c2c34';
+                }}
               />
             </div>
 

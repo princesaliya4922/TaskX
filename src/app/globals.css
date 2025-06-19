@@ -983,54 +983,66 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* Jira-style Black Theme Overrides */
-.jira-theme {
-  --background: 220 13% 9%;
-  --foreground: 220 9% 85%;
-  --card: 220 13% 11%;
-  --card-foreground: 220 9% 85%;
-  --popover: 220 13% 11%;
-  --popover-foreground: 220 9% 85%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 220 9% 85%;
-  --secondary: 220 13% 15%;
-  --secondary-foreground: 220 9% 75%;
-  --muted: 220 13% 13%;
-  --muted-foreground: 220 9% 55%;
-  --accent: 217 91% 60%;
-  --accent-foreground: 220 9% 85%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 220 9% 85%;
-  --border: 220 13% 18%;
-  --input: 220 13% 15%;
-  --ring: 217 91% 60%;
+/* Jira-style True Black Theme */
+:root {
+  /* Jira's actual black color palette */
+  --jira-bg-primary: #0c0c0c;      /* Main background - true black */
+  --jira-bg-secondary: #161618;     /* Cards, panels */
+  --jira-bg-tertiary: #1d1d20;     /* Elevated surfaces */
+  --jira-bg-hover: #22222a;        /* Hover states */
+  --jira-border: #2c2c34;          /* Borders */
+  --jira-border-light: #3c3c44;    /* Lighter borders */
+  --jira-text-primary: #b6c2cf;    /* Primary text */
+  --jira-text-secondary: #8993a4;  /* Secondary text */
+  --jira-text-muted: #6b778c;      /* Muted text */
+  --jira-blue: #579dff;            /* Jira blue accent */
+  --jira-blue-hover: #85b8ff;      /* Blue hover */
 }
 
-/* Force dark theme for the entire app */
+/* Override all theme variables with Jira colors */
 html {
   color-scheme: dark;
+  --background: 0 0% 5%;           /* #0c0c0c */
+  --foreground: 210 15% 75%;       /* #b6c2cf */
+  --card: 240 6% 9%;               /* #161618 */
+  --card-foreground: 210 15% 75%;  /* #b6c2cf */
+  --popover: 240 6% 9%;            /* #161618 */
+  --popover-foreground: 210 15% 75%; /* #b6c2cf */
+  --primary: 214 100% 73%;         /* #579dff */
+  --primary-foreground: 210 15% 75%; /* #b6c2cf */
+  --secondary: 240 6% 12%;         /* #1d1d20 */
+  --secondary-foreground: 210 15% 65%; /* #8993a4 */
+  --muted: 240 6% 11%;             /* #1c1c1e */
+  --muted-foreground: 210 15% 55%; /* #6b778c */
+  --accent: 214 100% 73%;          /* #579dff */
+  --accent-foreground: 210 15% 75%; /* #b6c2cf */
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 15% 75%;
+  --border: 240 6% 17%;            /* #2c2c34 */
+  --input: 240 6% 12%;             /* #1d1d20 */
+  --ring: 214 100% 73%;            /* #579dff */
 }
 
 body {
-  background: rgb(9, 10, 11) !important;
-  color: rgb(229, 231, 235) !important;
+  background: #0c0c0c !important;
+  color: #b6c2cf !important;
 }
 
-/* Jira-style compact scrollbars */
+/* Jira-style compact scrollbars with true black theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(31, 41, 55);
+  background: #161618;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(75, 85, 99);
+  background: #2c2c34;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(107, 114, 128);
+  background: #3c3c44;
 }

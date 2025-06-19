@@ -382,47 +382,78 @@ export default function SprintBacklogView({
     const totalTickets = sprint.tickets.length;
 
     return (
-      <div key={sprint.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+      <div
+        key={sprint.id}
+        style={{ backgroundColor: '#161618', border: '1px solid #2c2c34' }}
+        className="rounded-lg overflow-hidden"
+      >
         {/* Sprint Header */}
         <div
-          className="flex items-center justify-between px-3 py-2 bg-gray-800 cursor-pointer hover:bg-gray-750 transition-colors border-b border-gray-700"
+          className="flex items-center justify-between px-3 py-2 cursor-pointer transition-colors"
+          style={{
+            backgroundColor: '#1d1d20',
+            borderBottom: '1px solid #2c2c34'
+          }}
           onClick={() => toggleSprintExpansion(sprint.id)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#22222a';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#1d1d20';
+          }}
         >
           <div className="flex items-center space-x-2">
             {isExpanded ? (
-              <ChevronDown className="h-3 w-3 text-gray-400" />
+              <ChevronDown className="h-3 w-3" style={{ color: '#8993a4' }} />
             ) : (
-              <ChevronUp className="h-3 w-3 text-gray-400" />
+              <ChevronUp className="h-3 w-3" style={{ color: '#8993a4' }} />
             )}
 
-            <Calendar className="h-3 w-3 text-blue-400" />
-            <h3 className="text-white font-medium text-sm">{sprint.name}</h3>
-            <span className="text-gray-400 text-xs">
+            <Calendar className="h-3 w-3" style={{ color: '#579dff' }} />
+            <h3 style={{ color: '#b6c2cf' }} className="font-medium text-sm">{sprint.name}</h3>
+            <span style={{ color: '#8993a4' }} className="text-xs">
               {new Date(sprint.startDate).toLocaleDateString()} - {new Date(sprint.endDate).toLocaleDateString()}
             </span>
-            <span className="text-gray-500 text-xs">
+            <span style={{ color: '#6b778c' }} className="text-xs">
               ({completedTickets} of {totalTickets} items)
             </span>
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+            <span
+              style={{ backgroundColor: '#579dff', color: '#b6c2cf' }}
+              className="px-1.5 py-0.5 rounded text-xs font-medium"
+            >
               {totalTickets}
             </span>
-            <span className="bg-green-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+            <span
+              style={{ backgroundColor: '#22c55e', color: '#b6c2cf' }}
+              className="px-1.5 py-0.5 rounded text-xs font-medium"
+            >
               {completedTickets}
             </span>
-            <span className="text-gray-400 text-xs">Complete sprint</span>
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-1">
+            <span style={{ color: '#8993a4' }} className="text-xs">Complete sprint</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1"
+              style={{ color: '#8993a4' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#b6c2cf';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#8993a4';
+              }}
+            >
               <MoreHorizontal className="h-3 w-3" />
             </Button>
           </div>
         </div>
 
         {isExpanded && (
-          <div className="bg-gray-900">
+          <div style={{ backgroundColor: '#161618' }}>
             {sprint.tickets.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8" style={{ color: '#8993a4' }}>
                 <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">There's nothing matching this filter</p>
               </div>
@@ -431,17 +462,30 @@ export default function SprintBacklogView({
                 items={sprint.tickets.map(t => t.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="divide-y divide-gray-700">
+                <div style={{ borderColor: '#2c2c34' }} className="divide-y">
                   {sprint.tickets.map(renderTicket)}
                 </div>
               </SortableContext>
             )}
 
-            <div className="px-3 py-2 border-t border-gray-700 bg-gray-800">
+            <div
+              className="px-3 py-2"
+              style={{
+                borderTop: '1px solid #2c2c34',
+                backgroundColor: '#1d1d20'
+              }}
+            >
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-400 hover:text-white text-xs px-2 py-1"
+                className="text-xs px-2 py-1"
+                style={{ color: '#8993a4' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#b6c2cf';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#8993a4';
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onCreateTicket?.();
@@ -460,13 +504,13 @@ export default function SprintBacklogView({
   if (loading) {
     return (
       <div className="p-6 text-center">
-        <div className="text-gray-400">Loading backlog...</div>
+        <div style={{ color: '#8993a4' }}>Loading backlog...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full overflow-hidden bg-gray-950">
+    <div className="flex h-full overflow-hidden" style={{ backgroundColor: '#0c0c0c' }}>
       {/* Main Content */}
       <div
         className="flex-1 transition-all duration-300 ease-in-out min-w-0 overflow-x-hidden"
@@ -507,13 +551,22 @@ export default function SprintBacklogView({
 
               {/* Backlog Section */}
               {filteredBacklogTickets.length > 0 && (
-                <div className="bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
+                <div
+                  style={{ backgroundColor: '#161618', border: '1px solid #2c2c34' }}
+                  className="rounded-md overflow-hidden"
+                >
                   {/* Backlog Header */}
-                  <div className="flex items-center justify-between px-3 py-2 bg-gray-800 border-b border-gray-700">
+                  <div
+                    className="flex items-center justify-between px-3 py-2"
+                    style={{
+                      backgroundColor: '#1d1d20',
+                      borderBottom: '1px solid #2c2c34'
+                    }}
+                  >
                     <div className="flex items-center space-x-2">
-                      <ChevronDown className="h-3 w-3 text-gray-400" />
-                      <h3 className="text-white font-medium text-xs">Backlog</h3>
-                      <span className="text-gray-500 text-xs">
+                      <ChevronDown className="h-3 w-3" style={{ color: '#8993a4' }} />
+                      <h3 style={{ color: '#b6c2cf' }} className="font-medium text-xs">Backlog</h3>
+                      <span style={{ color: '#6b778c' }} className="text-xs">
                         ({filteredBacklogTickets.length} of {allBacklogTickets.length} items)
                       </span>
                     </div>
@@ -521,28 +574,48 @@ export default function SprintBacklogView({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-400 hover:text-white text-xs px-2 py-1 h-6"
+                      className="text-xs px-2 py-1 h-6"
+                      style={{ color: '#8993a4' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#b6c2cf';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#8993a4';
+                      }}
                     >
                       Start sprint
                     </Button>
                   </div>
 
                   {/* Backlog Content */}
-                  <div className="bg-gray-900">
+                  <div style={{ backgroundColor: '#161618' }}>
                     <SortableContext
                       items={filteredBacklogTickets.map(t => t.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="divide-y divide-gray-700">
+                      <div style={{ borderColor: '#2c2c34' }} className="divide-y">
                         {filteredBacklogTickets.map(renderTicket)}
                       </div>
                     </SortableContext>
 
-                    <div className="px-3 py-2 border-t border-gray-700 bg-gray-800">
+                    <div
+                      className="px-3 py-2"
+                      style={{
+                        borderTop: '1px solid #2c2c34',
+                        backgroundColor: '#1d1d20'
+                      }}
+                    >
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-white text-xs px-2 py-1"
+                        className="text-xs px-2 py-1"
+                        style={{ color: '#8993a4' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#b6c2cf';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#8993a4';
+                        }}
                         onClick={onCreateTicket}
                       >
                         <Plus className="h-3 w-3 mr-1" />
@@ -553,7 +626,7 @@ export default function SprintBacklogView({
                 </div>
               )}
 
-              <div className="text-center text-xs text-gray-500 py-2">
+              <div className="text-center text-xs py-2" style={{ color: '#6b778c' }}>
                 {filteredBacklogTickets.length + filteredSprints.reduce((acc, sprint) => acc + sprint.tickets.length, 0)} of {allBacklogTickets.length + allSprints.reduce((acc, sprint) => acc + sprint.tickets.length, 0)} work items visible
               </div>
             </div>
