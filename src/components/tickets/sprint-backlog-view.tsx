@@ -33,6 +33,7 @@ import CompactFilterBar from "./compact-filter-bar";
 import EnhancedTicketRow from "./enhanced-ticket-row";
 import JiraStyleTicketRow from "./jira-style-ticket-row";
 import TicketSidebar from "./ticket-sidebar";
+import { useSprintBacklog } from "@/hooks/use-project-cache";
 
 interface SprintBacklogViewProps {
   organizationId: string;
@@ -49,18 +50,16 @@ export default function SprintBacklogView({
   onCreateTicket,
   refreshTrigger,
 }: SprintBacklogViewProps) {
-  const [allSprints, setAllSprints] = useState<(Sprint & { tickets: Ticket[] })[]>([]);
-  const [allBacklogTickets, setAllBacklogTickets] = useState<Ticket[]>([]);
-  const [projectMembers, setProjectMembers] = useState<Array<{
-    id: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      avatarUrl?: string;
-    };
-  }>>([]);
-  const [loading, setLoading] = useState(true);
+  // Use cached data hook
+  const {
+    data: backlogData,
+    loading,
+    error,
+    updateTicketInCache,
+    reorderTicketsInCache,
+    invalidateCache
+  } = useSprintBacklog(organizationId, projectId, refreshTrigger);
+
   const [expandedSprints, setExpandedSprints] = useState<Set<string>>(new Set());
 
   // Sidebar state
@@ -81,56 +80,20 @@ export default function SprintBacklogView({
     })
   );
 
-  // Fetch data when component mounts, project changes, or refresh is triggered
+  // Extract data from cached result
+  const allSprints = backlogData?.sprints || [];
+  const allBacklogTickets = backlogData?.backlogTickets || [];
+  const projectMembers = backlogData?.projectMembers || [];
+
+  // Expand active sprints by default when data loads
   useEffect(() => {
-    fetchSprintsAndTickets();
-  }, [organizationId, projectId, refreshTrigger]);
-
-  const fetchSprintsAndTickets = async () => {
-    if (!projectId) {
-      setLoading(false);
-      return;
+    if (backlogData?.sprints) {
+      const activeSprints = backlogData.sprints
+        .filter((sprint: Sprint) => sprint.status === "ACTIVE")
+        .map((sprint: Sprint) => sprint.id);
+      setExpandedSprints(new Set(activeSprints));
     }
-
-    try {
-      setLoading(true);
-
-      // Fetch sprints with all tickets (no filtering on server)
-      const sprintsResponse = await fetch(
-        `/api/organizations/${organizationId}/projects/${projectId}/sprints`
-      );
-
-      // Fetch all backlog tickets (no filtering on server, ordered by updatedAt to maintain drag order)
-      const backlogResponse = await fetch(
-        `/api/organizations/${organizationId}/projects/${projectId}/tickets?sprintId=null&limit=1000&sortBy=updatedAt&sortOrder=asc`
-      );
-
-      // Fetch project members
-      const membersResponse = await fetch(
-        `/api/organizations/${organizationId}/projects/${projectId}/members`
-      );
-
-      if (sprintsResponse.ok && backlogResponse.ok && membersResponse.ok) {
-        const sprintsData = await sprintsResponse.json();
-        const backlogData = await backlogResponse.json();
-        const membersData = await membersResponse.json();
-
-        setAllSprints(sprintsData);
-        setAllBacklogTickets(backlogData.tickets || []);
-        setProjectMembers(membersData);
-
-        // Expand active sprints by default
-        const activeSprints = sprintsData
-          .filter((sprint: Sprint) => sprint.status === "ACTIVE")
-          .map((sprint: Sprint) => sprint.id);
-        setExpandedSprints(new Set(activeSprints));
-      }
-    } catch (error) {
-      console.error("Error fetching sprints and tickets:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [backlogData?.sprints]);
 
   // Client-side filtering to prevent re-renders
   const filterTicket = useCallback((ticket: Ticket) => {
@@ -187,16 +150,8 @@ export default function SprintBacklogView({
 
   // Handle ticket updates
   const handleUpdateTicket = useCallback(async (ticketId: string, updates: Partial<Ticket>) => {
-    // Optimistically update the UI first
-    const updateTicketInState = (ticket: Ticket) =>
-      ticket.id === ticketId ? { ...ticket, ...updates } : ticket;
-
-    setAllSprints(prev => prev.map(sprint => ({
-      ...sprint,
-      tickets: sprint.tickets.map(updateTicketInState)
-    })));
-
-    setAllBacklogTickets(prev => prev.map(updateTicketInState));
+    // Optimistic update in cache
+    updateTicketInCache(ticketId, updates);
 
     try {
       const response = await fetch(
@@ -212,28 +167,19 @@ export default function SprintBacklogView({
 
       if (response.ok) {
         const updatedTicket = await response.json();
-
-        // Update with the server response to ensure consistency
-        setAllSprints(prev => prev.map(sprint => ({
-          ...sprint,
-          tickets: sprint.tickets.map(ticket =>
-            ticket.id === ticketId ? { ...ticket, ...updatedTicket } : ticket
-          )
-        })));
-
-        setAllBacklogTickets(prev => prev.map(ticket =>
-          ticket.id === ticketId ? { ...ticket, ...updatedTicket } : ticket
-        ));
+        // Update cache with server response
+        updateTicketInCache(ticketId, updatedTicket);
       } else {
-        // Revert optimistic update on error
-        console.error("Failed to update ticket, reverting changes");
-        // You could implement a revert mechanism here
+        // Revert optimistic update on error by invalidating cache
+        console.error("Failed to update ticket, refreshing data");
+        invalidateCache();
       }
     } catch (error) {
       console.error("Error updating ticket:", error);
-      // Revert optimistic update on error
+      // Revert optimistic update on error by invalidating cache
+      invalidateCache();
     }
-  }, [organizationId, projectId]);
+  }, [organizationId, projectId, updateTicketInCache, invalidateCache]);
 
   // Handle drag end
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
@@ -288,10 +234,12 @@ export default function SprintBacklogView({
         const newIndex = allBacklogTickets.findIndex(t => t.id === overId);
         const reorderedTickets = arrayMove(allBacklogTickets, oldIndex, newIndex);
 
-        setAllBacklogTickets(reorderedTickets);
         newOrder = reorderedTickets.map(t => t.id);
 
-        // Save order to database
+        // Optimistically update cache first for immediate UI feedback
+        reorderTicketsInCache(newOrder, null);
+
+        // Save order to database in background
         try {
           await fetch(`/api/organizations/${organizationId}/projects/${projectId}/tickets/reorder`, {
             method: 'POST',
@@ -305,6 +253,8 @@ export default function SprintBacklogView({
           });
         } catch (error) {
           console.error('Failed to save ticket order:', error);
+          // On error, refresh cache to get correct order from server
+          invalidateCache();
         }
       } else {
         // Reorder within sprint
@@ -314,19 +264,12 @@ export default function SprintBacklogView({
           const newIndex = sprint.tickets.findIndex(t => t.id === overId);
           const reorderedTickets = arrayMove(sprint.tickets, oldIndex, newIndex);
 
-          setAllSprints(prev => prev.map(s => {
-            if (s.id === activeSprintId) {
-              return {
-                ...s,
-                tickets: reorderedTickets
-              };
-            }
-            return s;
-          }));
-
           newOrder = reorderedTickets.map(t => t.id);
 
-          // Save order to database
+          // Optimistically update cache first for immediate UI feedback
+          reorderTicketsInCache(newOrder, activeSprintId);
+
+          // Save order to database in background
           try {
             await fetch(`/api/organizations/${organizationId}/projects/${projectId}/tickets/reorder`, {
               method: 'POST',
@@ -340,11 +283,13 @@ export default function SprintBacklogView({
             });
           } catch (error) {
             console.error('Failed to save ticket order:', error);
+            // On error, refresh cache to get correct order from server
+            invalidateCache();
           }
         }
       }
     }
-  }, [allSprints, allBacklogTickets, organizationId, projectId]);
+  }, [allSprints, allBacklogTickets, organizationId, projectId, reorderTicketsInCache, invalidateCache]);
 
   const getTicketUrl = (ticket: Ticket) => {
     return `/organizations/${organizationId}/projects/${projectId}/tickets/${ticket.id}`;
@@ -505,6 +450,21 @@ export default function SprintBacklogView({
     return (
       <div className="p-6 text-center">
         <div style={{ color: '#8993a4' }}>Loading backlog...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div style={{ color: '#ef4444' }}>Error loading backlog: {error}</div>
+        <button
+          onClick={() => invalidateCache()}
+          className="mt-2 px-4 py-2 text-sm rounded"
+          style={{ backgroundColor: '#579dff', color: '#b6c2cf' }}
+        >
+          Retry
+        </button>
       </div>
     );
   }

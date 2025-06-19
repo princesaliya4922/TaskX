@@ -29,6 +29,7 @@ import Link from "next/link";
 import { formatDate, getInitials } from "@/lib/utils";
 import { Ticket, TicketStatus, TicketType, Priority } from "@/types";
 import CompactFilterBar from "./compact-filter-bar";
+import { useTicketList } from "@/hooks/use-project-cache";
 
 interface TicketListProps {
   organizationId: string;
@@ -73,8 +74,6 @@ const priorityColors = {
 };
 
 export default function TicketList({ organizationId, projectId, onCreateTicket, refreshTrigger }: TicketListProps) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -83,45 +82,35 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
   const [sortBy, setSortBy] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchTickets();
-  }, [organizationId, projectId, search, statusFilter, typeFilter, priorityFilter, assigneeFilter, sortBy, sortOrder, page, refreshTrigger]);
+  // Use cached data hook
+  const {
+    data: ticketData,
+    loading,
+    error,
+    updateTicketInCache,
+    invalidateCache
+  } = useTicketList(
+    organizationId,
+    projectId,
+    {
+      search,
+      status: statusFilter,
+      type: typeFilter,
+      priority: priorityFilter,
+      assignee: assigneeFilter,
+      sortBy,
+      sortOrder,
+      page
+    },
+    refreshTrigger
+  );
 
-  const fetchTickets = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-        sortBy,
-        sortOrder,
-      });
+  // Extract data from cached result
+  const tickets = ticketData?.tickets || [];
+  const totalPages = ticketData?.totalPages || 1;
 
-      if (search) params.append("search", search);
-      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
-      if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
-      if (priorityFilter && priorityFilter !== "all") params.append("priority", priorityFilter);
-      if (assigneeFilter && assigneeFilter !== "all") params.append("assigneeId", assigneeFilter);
-      if (projectId) params.append("projectId", projectId);
 
-      const endpoint = projectId
-        ? `/api/organizations/${organizationId}/projects/${projectId}/tickets`
-        : `/api/organizations/${organizationId}/tickets`;
-
-      const response = await fetch(`${endpoint}?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTickets(data.tickets);
-        setTotalPages(data.pagination.pages);
-      }
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -174,6 +163,17 @@ export default function TicketList({ organizationId, projectId, onCreateTicket, 
           {loading ? (
             <div className="p-6 text-center">
               <div style={{ color: '#8993a4' }}>Loading tickets...</div>
+            </div>
+          ) : error ? (
+            <div className="p-6 text-center">
+              <div style={{ color: '#ef4444' }}>Error loading tickets: {error}</div>
+              <button
+                onClick={() => invalidateCache()}
+                className="mt-2 px-4 py-2 text-sm rounded"
+                style={{ backgroundColor: '#579dff', color: '#b6c2cf' }}
+              >
+                Retry
+              </button>
             </div>
           ) : tickets.length === 0 ? (
             <div className="p-8 text-center">
