@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePermissions, PermissionGate } from "@/hooks/use-permissions";
-import ProjectLayout from "@/components/layout/project-layout";
+import ProjectLayout, { useProject } from "@/components/layout/project-layout";
 
 interface Project {
   id: string;
@@ -72,26 +72,24 @@ interface Organization {
   };
 }
 
-export default function ProjectDashboardPage() {
+// Dashboard content component that uses the project context
+function ProjectDashboardContent() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
   const organizationId = params.id as string;
   const projectId = params.projectId as string;
-  
-  const [project, setProject] = useState<Project | null>(null);
+
+  // Use project data from context instead of fetching separately
+  const { project, loading, error } = useProject();
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const { hasPermission } = usePermissions(organization);
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    
     fetchOrganization();
-    fetchProject();
-  }, [session, organizationId, projectId]);
+  }, [session, organizationId]);
 
   const fetchOrganization = async () => {
     try {
@@ -102,31 +100,6 @@ export default function ProjectDashboardPage() {
       }
     } catch (error) {
       console.error("Error fetching organization:", error);
-    }
-  };
-
-  const fetchProject = async () => {
-    try {
-      const response = await fetch(`/api/organizations/${organizationId}/projects/${projectId}`);
-      
-      if (!response.ok) {
-        if (response.status === 403) {
-          setError("You don't have access to this project");
-        } else if (response.status === 404) {
-          setError("Project not found");
-        } else {
-          setError("Failed to load project");
-        }
-        return;
-      }
-
-      const data = await response.json();
-      setProject(data);
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      setError("Failed to load project");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -155,8 +128,7 @@ export default function ProjectDashboardPage() {
   const isProjectLead = project.userRole === "LEAD";
 
   return (
-    <ProjectLayout>
-      <div className="p-6">
+    <div className="p-6">
         {/* Project Info */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -310,7 +282,14 @@ export default function ProjectDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      </div>
+    </div>
+  );
+}
+
+export default function ProjectDashboardPage() {
+  return (
+    <ProjectLayout>
+      <ProjectDashboardContent />
     </ProjectLayout>
   );
 }

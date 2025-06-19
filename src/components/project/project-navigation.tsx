@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useMemo, memo } from "react";
 import Link from "next/link";
-import { 
+import {
   LayoutDashboard,
   List,
   Kanban,
@@ -18,14 +19,15 @@ interface ProjectNavigationProps {
   projectName: string;
 }
 
-export default function ProjectNavigation({ 
-  organizationId, 
-  projectId, 
-  projectName 
+const ProjectNavigation = memo(function ProjectNavigation({
+  organizationId,
+  projectId,
+  projectName
 }: ProjectNavigationProps) {
   const pathname = usePathname();
 
-  const navigationTabs = [
+  // Memoize navigation tabs to prevent recreation on every render
+  const navigationTabs = useMemo(() => [
     {
       name: "Backlog",
       href: `/organizations/${organizationId}/projects/${projectId}/backlog`,
@@ -74,7 +76,7 @@ export default function ProjectNavigation({
       icon: Settings,
       active: pathname.includes("/settings"),
     },
-  ];
+  ], [organizationId, projectId, pathname]);
 
   return (
     <div style={{ backgroundColor: '#161618', borderBottom: '1px solid #2c2c34' }}>
@@ -115,4 +117,6 @@ export default function ProjectNavigation({
       </div>
     </div>
   );
-}
+});
+
+export default ProjectNavigation;
