@@ -1,0 +1,396 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id                String               @id @default(cuid())
+  email             String               @unique
+  password          String
+  name              String
+  avatarUrl         String?
+  isActive          Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relations
+  ownedOrganizations     Organization[]      @relation("OrganizationOwner")
+  organizationMemberships OrganizationMember[]
+  leadProjects           Project[]           @relation("ProjectLead")
+  projectMemberships     ProjectMember[]
+  createdTickets         Ticket[]            @relation("TicketReporter")
+  assignedTickets        Ticket[]            @relation("TicketAssignee")
+  comments               Comment[]
+  mentions               Mention[]
+  activities             Activity[]
+  notifications          Notification[]
+  
+  @@index([email])
+}
+
+// Organization model for multi-tenant support
+model Organization {
+  id                String               @id @default(cuid())
+  name              String
+  slug              String               @unique
+  ticketPrefix      String               @unique // e.g., "TWP", "MOXI"
+  description       String?
+  logoUrl           String?
+  ownerId           String
+  isActive          Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relations
+  owner             User                 @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  members           OrganizationMember[]
+  projects          Project[]
+  tickets           Ticket[]
+  sprints           Sprint[]
+  labels            Label[]
+  invitations       Invitation[]
+  
+  @@index([slug])
+  @@index([ownerId])
+}
+
+// Junction table for organization members with roles
+model OrganizationMember {
+  id                String               @id @default(cuid())
+  userId            String
+  organizationId    String
+  role              MemberRole           @default(MEMBER)
+  joinedAt          DateTime             @default(now())
+  
+  // Relations
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+// Sprint model for agile management
+// Project model for organizing tickets and sprints
+model Project {
+  id                String               @id @default(cuid())
+  name              String
+  key               String               // e.g., "TWP", "MOXI" - used for ticket prefixes
+  description       String?
+  organizationId    String
+  leadId            String?              // Project lead
+  isActive          Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead              User?                @relation("ProjectLead", fields: [leadId], references: [id])
+  sprints           Sprint[]
+  tickets           Ticket[]
+  members           ProjectMember[]
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+  @@index([leadId])
+  @@index([isActive])
+}
+
+// Junction table for project members
+model ProjectMember {
+  id                String               @id @default(cuid())
+  projectId         String
+  userId            String
+  role              ProjectRole          @default(MEMBER)
+  joinedAt          DateTime             @default(now())
+
+  // Relations
+  project           Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Sprint {
+  id                String               @id @default(cuid())
+  name              String
+  organizationId    String
+  projectId         String?              // Optional project association
+  startDate         DateTime
+  endDate           DateTime
+  goal              String?
+  status            SprintStatus         @default(PLANNED)
+  completedAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project           Project?             @relation(fields: [projectId], references: [id])
+  tickets           Ticket[]
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([status])
+}
+
+// Main ticket model
+model Ticket {
+  id                String               @id @default(cuid())
+  ticketNumber      Int
+  ticketId          String               @unique // e.g., "TWP-1", "MOXI-123"
+  title             String
+  description       Json?                // Rich text content stored as JSON
+  type              TicketType
+  status            TicketStatus         @default(TODO)
+  priority          Priority             @default(MEDIUM)
+  area              Area                 @default(DEVELOPMENT)
+  storyPoints       Int?
+  dueDate           DateTime?
+  organizationId    String
+  projectId         String?              // Optional project association
+  reporterId        String
+  assigneeId        String?
+  sprintId          String?
+  parentId          String?              // For epic relationships
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project           Project?             @relation(fields: [projectId], references: [id])
+  reporter          User                 @relation("TicketReporter", fields: [reporterId], references: [id])
+  assignee          User?                @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  sprint            Sprint?              @relation(fields: [sprintId], references: [id])
+  parent            Ticket?              @relation("TicketHierarchy", fields: [parentId], references: [id])
+  children          Ticket[]             @relation("TicketHierarchy")
+  comments          Comment[]
+  attachments       Attachment[]
+  labels            TicketLabel[]
+  activities        Activity[]
+
+  @@unique([organizationId, ticketNumber])
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([reporterId])
+  @@index([assigneeId])
+  @@index([sprintId])
+  @@index([parentId])
+  @@index([status])
+  @@index([type])
+}
+
+// Label model for ticket categorization
+model Label {
+  id                String               @id @default(cuid())
+  name              String
+  color             String               @default("#000000")
+  organizationId    String
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tickets           TicketLabel[]
+  
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+// Junction table for ticket labels
+model TicketLabel {
+  ticketId          String
+  labelId           String
+  
+  // Relations
+  ticket            Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  label             Label                @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  
+  @@id([ticketId, labelId])
+  @@index([ticketId])
+  @@index([labelId])
+}
+
+// Comment model for ticket discussions
+model Comment {
+  id                String               @id @default(cuid())
+  content           Json                 // Rich text content
+  ticketId          String
+  authorId          String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relations
+  ticket            Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author            User                 @relation(fields: [authorId], references: [id])
+  mentions          Mention[]
+  
+  @@index([ticketId])
+  @@index([authorId])
+}
+
+// Mention model for tagging users in comments
+model Mention {
+  id                String               @id @default(cuid())
+  commentId         String
+  userId            String
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  comment           Comment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id])
+  
+  @@unique([commentId, userId])
+  @@index([userId])
+}
+
+// Attachment model for file uploads
+model Attachment {
+  id                String               @id @default(cuid())
+  filename          String
+  url               String
+  size              Int
+  mimeType          String
+  ticketId          String
+  uploadedById      String
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  ticket            Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId])
+}
+
+// Activity model for audit trail
+model Activity {
+  id                String               @id @default(cuid())
+  type              ActivityType
+  description       String
+  metadata          Json?
+  ticketId          String
+  userId            String
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  ticket            Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id])
+  
+  @@index([ticketId])
+  @@index([userId])
+  @@index([type])
+}
+
+// Invitation model for adding members
+model Invitation {
+  id                String               @id @default(cuid())
+  email             String
+  organizationId    String
+  role              MemberRole           @default(MEMBER)
+  token             String               @unique @default(cuid())
+  expiresAt         DateTime
+  acceptedAt        DateTime?
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@index([email])
+  @@index([organizationId])
+  @@index([token])
+}
+
+// Notification model for user notifications
+model Notification {
+  id                String               @id @default(cuid())
+  type              NotificationType
+  title             String
+  message           String
+  metadata          Json?
+  userId            String
+  isRead            Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  
+  // Relations
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+}
+
+// Enums
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum ProjectRole {
+  LEAD
+  MEMBER
+}
+
+enum TicketType {
+  BUG
+  TASK
+  STORY
+  EPIC
+}
+
+enum TicketStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  ON_HOLD
+  READY_TO_DEPLOY
+  REVIEW_PROD
+  DONE
+}
+
+enum Priority {
+  HIGHEST
+  HIGH
+  MEDIUM
+  LOW
+  LOWEST
+}
+
+enum Area {
+  DEVELOPMENT
+  DESIGN
+  PRODUCT
+  RESEARCH
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+enum ActivityType {
+  TICKET_CREATED
+  TICKET_UPDATED
+  TICKET_ASSIGNED
+  TICKET_STATUS_CHANGED
+  COMMENT_ADDED
+  ATTACHMENT_ADDED
+  SPRINT_CHANGED
+  TICKETS_REORDERED
+}
+
+enum NotificationType {
+  MENTION
+  ASSIGNMENT
+  COMMENT
+  DUE_DATE_REMINDER
+  STATUS_CHANGE
+}

@@ -1,0 +1,79 @@
+*** I HAD GIVEN BELOW PROMPT TO CLAUDE TO GENERATE SCHEMA.PRISMA FILE, SO THIS IS FOR YOUR UNDERSTANDING ***
+
+"You are tasked with designing a database schema for a task manager web application similar to Jira, using PostgreSQL as the database. Your goal is to analyze the given requirements, design a robust database schema, and generate a schema.prisma file.
+Here are the requirements for the task manager application:
+
+<requirements>
+I want to build a task manager web application like Jira.
+So I want you to design the database for it and generate schema.prisma file. We will be using Postgresql as the database for it.
+I am listing down all the requrenments and features of it.
+
+- Authentication-> signup, signin
+- User should be able to create multiple organisations.
+- The user who creates specific organisation will be admin of that organisation and will have aa the acccess.
+- Then admin should be able to add people to any organisation.
+
+- Any member who are in organisation should be able to create the tickets.
+- A ticket should have following options:
+  - title: ticket should have title
+  - description: here it like whole editor where user can intert text and images as well in between
+  - Reporter: who created the specific ticket
+  - assignee: The ticket should be assignable to any member of that organisation
+  - due Date: due date of the task
+  - Story point: In how many hours the task will be completed
+  - creation date: On which date the ticket was created
+  - priority: high, medium, low, lowest
+  - sprint: in which sprint the ticket belongs to
+  - label: creator of ticket can add any text
+  - parent: parent epic (if any)
+  - area: development, design, product, research
+  - status: To Do, In Progress, In Review, On Hold, Ready To Deploy, Review Prod, Done
+
+  - Here the ticket can have multiple type that user can select:
+    Bug, task, story, epic
+    - Epic is like a parent ticket which can have multiple child tickets
+  - Each ticket should have specific id with prefix (that can be selected while creacting organisation)
+    for ex: (twp-1, twp-2, ...) or (moxi-1, moxi-2) etc
+
+  - Comments:
+    Each ticket will have commets section, in which any memeber can comment by taging someone.
+
+- The memeber should be able to create multiple sprints:
+  - Each sprint will have tickets assigned to it (as mentioned above)
+  - Sprint start date and End Date
+  - The admin can mark sprint as completed.
+
+- The frontend will have Backlog in which there will be members to select:
+  - If I select member "prince" then all the tasks of prince will be listed
+  - If no one is seleceted then all the tasks will be displayed
+
+And you can add more features and do changes if i miss something.
+Now create a robust database design for it and generate schema.prisma file.
+</requirements>
+
+Follow these steps to complete the task:
+
+1. Carefully analyze the provided requirements. Identify all the entities, their attributes, and relationships between them.
+
+2. Design a comprehensive database schema that covers all the mentioned features and requirements. Consider the following aspects:
+   - User authentication and organization management
+   - Ticket structure and properties
+   - Sprint management
+   - Comments and user interactions
+   - Any additional features you think are necessary for a robust task management system
+
+3. Based on your database design, create a schema.prisma file. Follow these guidelines:
+   - Use appropriate Prisma data types for each field
+   - Define relationships between models using the correct Prisma relationship syntax
+   - Include necessary indexes and unique constraints
+   - Add comments to explain complex relationships or non-obvious design decisions
+
+4. After creating the schema.prisma file, review it to ensure all requirements are met and the design is optimized for performance and scalability.
+
+5. Provide your final output in the following format:
+   a. A brief explanation of your database design decisions and any assumptions you made
+   b. The complete schema.prisma file.
+
+And you can add more features and do changes if i miss something.
+
+Remember to consider best practices for database design, such as normalization, appropriate use of foreign keys, and efficient indexing. If you find any ambiguities or potential improvements in the requirements, feel free to make reasonable assumptions and explain them in your output."
