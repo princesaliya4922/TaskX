@@ -24,10 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate, getInitials } from "@/lib/utils";
-import { Ticket } from "@/types";
+import { Ticket, User } from "@/types";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useSession } from "next-auth/react";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { RichTextDisplay } from "@/components/ui/rich-text-display";
+import { CommentSystem } from "@/components/comments";
 
 // Ticket cache for individual tickets
 const ticketCache = new Map<string, { data: Ticket; timestamp: number }>();
@@ -125,9 +127,9 @@ export default function TicketSidebar({
   width = 400,
   onWidthChange,
 }: TicketSidebarProps) {
+  const { data: session } = useSession();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
-  const [newComment, setNewComment] = useState("");
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -333,31 +335,7 @@ export default function TicketSidebar({
     handleUpdateTicket({ assigneeId });
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim() || !ticket) return;
 
-    try {
-      const response = await fetch(
-        `/api/organizations/${organizationId}/tickets/${ticketId}/comments`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: newComment,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        setNewComment("");
-        fetchTicketDetails(); // Refresh to get new comment
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -1041,114 +1019,15 @@ export default function TicketSidebar({
                     className="flex-1 flex flex-col px-6 py-3"
                     style={{ backgroundColor: '#1d1d20' }}
                   >
-                    {/* Add Comment */}
-                    <div className="space-y-2 mb-4">
-                      <Textarea
-                        placeholder="Add a comment..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="text-sm resize-none focus:ring-1 min-h-[60px] border-0"
-                        style={{
-                          backgroundColor: '#2c2c34',
-                          color: '#b6c2cf',
-                          focusRingColor: '#579dff'
-                        }}
-                        rows={2}
+                    {session?.user && (
+                      <CommentSystem
+                        ticketId={ticketId}
+                        organizationId={organizationId}
+                        projectId={projectId || ''}
+                        currentUser={session.user as User}
+                        projectMembers={projectMembers}
                       />
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleAddComment}
-                          disabled={!newComment.trim()}
-                          size="sm"
-                          className="text-white font-medium h-7 px-3 text-xs"
-                          style={{ backgroundColor: '#579dff' }}
-                          onMouseEnter={(e) => {
-                            if (!e.currentTarget.disabled) {
-                              e.currentTarget.style.backgroundColor = '#4c8ce8';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!e.currentTarget.disabled) {
-                              e.currentTarget.style.backgroundColor = '#579dff';
-                            }
-                          }}
-                        >
-                          Add Comment
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Comments List */}
-                    <div className="flex-1 space-y-3 overflow-y-auto">
-                      {ticket.comments?.length ? (
-                        ticket.comments.map((comment) => (
-                          <div
-                            key={comment.id}
-                            className="rounded-sm p-3 border-l-2"
-                            style={{
-                              backgroundColor: '#2c2c34',
-                              borderLeftColor: '#579dff'
-                            }}
-                          >
-                            <div className="flex items-start space-x-2 mb-2">
-                              <Avatar className="h-6 w-6 mt-0.5">
-                                <AvatarImage src={comment.author.avatarUrl || ""} />
-                                <AvatarFallback
-                                  className="text-xs"
-                                  style={{ backgroundColor: '#44474a', color: '#b6c2cf' }}
-                                >
-                                  {getInitials(comment.author.name || "")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center space-x-2">
-                                  <span
-                                    className="text-sm font-medium truncate"
-                                    style={{ color: '#b6c2cf' }}
-                                  >
-                                    {comment.author.name}
-                                  </span>
-                                  <span
-                                    className="text-xs flex-shrink-0"
-                                    style={{ color: '#8993a4' }}
-                                  >
-                                    {formatDate(comment.createdAt)}
-                                  </span>
-                                </div>
-                                <div
-                                  className="text-sm mt-1 leading-normal"
-                                  style={{ color: '#b6c2cf' }}
-                                >
-                                  {typeof comment.content === 'string'
-                                    ? comment.content
-                                    : JSON.stringify(comment.content)
-                                  }
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-6">
-                          <MessageSquare
-                            className="h-8 w-8 mx-auto mb-2"
-                            style={{ color: '#44474a' }}
-                          />
-                          <p
-                            className="text-sm mb-1"
-                            style={{ color: '#8993a4' }}
-                          >
-                            No comments yet
-                          </p>
-                          <p
-                            className="text-xs"
-                            style={{ color: '#6b7280' }}
-                          >
-                            Be the first to add a comment
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent

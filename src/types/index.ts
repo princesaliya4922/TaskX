@@ -192,10 +192,17 @@ export interface Comment {
   content: any;
   ticketId: string;
   authorId: string;
+  parentId?: string;
+  isEdited: boolean;
   createdAt: Date;
   updatedAt: Date;
   author: User;
+  parent?: Comment;
+  replies?: Comment[];
   mentions?: Mention[];
+  _count?: {
+    replies: number;
+  };
 }
 
 // Other types

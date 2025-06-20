@@ -185,6 +185,10 @@ interface RichTextEditorProps {
     email: string;
     avatarUrl?: string;
   }>;
+  autoMention?: {
+    id: string;
+    name: string;
+  };
 }
 
 export function RichTextEditor({
@@ -194,6 +198,7 @@ export function RichTextEditor({
   className,
   editable = true,
   projectMembers = [],
+  autoMention,
 }: RichTextEditorProps) {
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
@@ -252,6 +257,7 @@ export function RichTextEditor({
         },
         suggestion: {
           items: ({ query }) => {
+            console.log('Mention query:', query, 'Members:', projectMembers);
             return projectMembers
               .filter(member =>
                 (member.name && member.name.toLowerCase().includes(query.toLowerCase())) ||
@@ -265,6 +271,7 @@ export function RichTextEditor({
 
             return {
               onStart: (props: any) => {
+                console.log('Mention popup starting:', props);
                 component = new MentionList(props);
                 popup = document.createElement('div');
                 popup.className = 'mention-popup bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-2 z-50 max-h-48 overflow-y-auto fixed';
@@ -274,14 +281,14 @@ export function RichTextEditor({
                 document.body.appendChild(popup);
                 component.render(popup);
 
-                // Position the popup
+                // Position the popup relative to the editor
                 const { range } = props;
-                if (range) {
+                if (range && editor) {
                   const { from } = range;
-                  const start = editor?.view.coordsAtPos(from);
-                  if (start) {
-                    popup.style.left = `${start.left}px`;
-                    popup.style.top = `${start.bottom + 5}px`;
+                  const coords = editor.view.coordsAtPos(from);
+                  if (coords) {
+                    popup.style.left = `${coords.left}px`;
+                    popup.style.top = `${coords.bottom + 5}px`;
                   }
                 }
               },
@@ -290,12 +297,12 @@ export function RichTextEditor({
 
                 // Reposition the popup
                 const { range } = props;
-                if (range && popup) {
+                if (range && popup && editor) {
                   const { from } = range;
-                  const start = editor?.view.coordsAtPos(from);
-                  if (start) {
-                    popup.style.left = `${start.left}px`;
-                    popup.style.top = `${start.bottom + 5}px`;
+                  const coords = editor.view.coordsAtPos(from);
+                  if (coords) {
+                    popup.style.left = `${coords.left}px`;
+                    popup.style.top = `${coords.bottom + 5}px`;
                   }
                 }
               },
@@ -303,8 +310,8 @@ export function RichTextEditor({
                 return component.onKeyDown(props);
               },
               onExit: () => {
-                if (popup) {
-                  popup.remove();
+                if (popup && popup.parentNode) {
+                  popup.parentNode.removeChild(popup);
                 }
                 component?.destroy();
               },
@@ -320,6 +327,16 @@ export function RichTextEditor({
       onChange?.(editor.getHTML());
     },
     onCreate: ({ editor }) => {
+      // Auto-mention when replying
+      if (autoMention) {
+        setTimeout(() => {
+          editor.chain()
+            .focus()
+            .insertContent(`<span data-type="mention" data-id="${autoMention.id}" class="mention bg-blue-600 text-white px-1 py-0.5 rounded text-sm">@${autoMention.name}</span>&nbsp;`)
+            .run();
+        }, 100);
+      }
+
       // Ensure there's always a paragraph after images
       editor.on('update', () => {
         const { state } = editor;

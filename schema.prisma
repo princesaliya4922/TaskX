@@ -227,16 +227,21 @@ model Comment {
   content           Json                 // Rich text content
   ticketId          String
   authorId          String
+  parentId          String?              // For comment threading/replies
+  isEdited          Boolean              @default(false)
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
-  
+
   // Relations
   ticket            Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   author            User                 @relation(fields: [authorId], references: [id])
+  parent            Comment?             @relation("CommentReplies", fields: [parentId], references: [id])
+  replies           Comment[]            @relation("CommentReplies")
   mentions          Mention[]
-  
+
   @@index([ticketId])
   @@index([authorId])
+  @@index([parentId])
 }
 
 // Mention model for tagging users in comments

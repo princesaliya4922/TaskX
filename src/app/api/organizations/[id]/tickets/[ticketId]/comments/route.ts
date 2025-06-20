@@ -41,10 +41,13 @@ export async function GET(
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    // Get comments with pagination
+    // Get comments with pagination (with threading support)
     const [comments, totalCount] = await Promise.all([
       prisma.comment.findMany({
-        where: { ticketId },
+        where: {
+          ticketId,
+          parentId: null // Only get top-level comments
+        },
         include: {
           author: {
             select: {
@@ -65,14 +68,50 @@ export async function GET(
               },
             },
           },
+          replies: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  avatarUrl: true,
+                },
+              },
+              mentions: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc", // Replies in chronological order
+            },
+          },
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: "asc",
+          createdAt: "desc", // Latest comments first
         },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.comment.count({ where: { ticketId } }),
+      prisma.comment.count({
+        where: {
+          ticketId,
+          parentId: null
+        }
+      }),
     ]);
 
     return NextResponse.json({
@@ -127,7 +166,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { content, mentions = [] } = body;
+    const { content, mentions = [], parentId } = body;
 
     // Validate required fields
     if (!content) {
@@ -137,12 +176,30 @@ export async function POST(
       );
     }
 
+    // If parentId is provided, verify the parent comment exists
+    if (parentId) {
+      const parentComment = await prisma.comment.findFirst({
+        where: {
+          id: parentId,
+          ticketId, // Ensure parent belongs to same ticket
+        },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { error: "Parent comment not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     // Create comment
     const comment = await prisma.comment.create({
       data: {
         content,
         ticketId,
         authorId: session.user.id,
+        parentId,
         mentions: mentions.length > 0 ? {
           create: mentions.map((userId: string) => ({
             userId,
@@ -181,7 +238,6 @@ export async function POST(
           commentId: comment.id,
         },
         userId: session.user.id,
-        organizationId,
         ticketId,
       },
     });
